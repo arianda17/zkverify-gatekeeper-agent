@@ -1,0 +1,7 @@
+node_modules
+.git
+*.log
+seen-proof-tx.json
+task-cache.json
+.env
+HMAC_TEMP.txt

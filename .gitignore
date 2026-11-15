@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+seen-proof-tx.json
+task-cache.json
+circuits/*.wasm
+circuits/*.zkey
