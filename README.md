@@ -40,11 +40,19 @@ dispatch 1 Proof Gatekeeper practice task and check the feedback.
 
 ## If practice says the proof does not verify
 
-The proof itself is valid (verified locally against the circuit VK). A platform
-rejection means a public-signal encoding differs. Flip one at a time, restart,
-re-dispatch practice (cap 10/hour):
-- `VK_HASH_MODE=keccak` (instead of `modp`)
-- `TASK_ID_MODE=hex` or `suffix` (instead of `keccak`)
+**Practice does NOT validate public-signal encodings** (proven 2026-11-16:
+a practice task still returned proofStatus "verified" after the taskId
+encoding was deliberately flipped to `hex`). Practice only checks the
+Groth16 proof cryptographically. A round rejection (correct decision, -2
+proof_failure) means a public-signal encoding differs — the SCORED ROUNDS
+are the only true oracle. Flip one at a time, redeploy, and judge by the
+next round's results (rounds run 17:30-03:30 WIB; check the dashboard the
+next morning):
+- `VK_HASH_MODE=keccak` = keccak256 of the RAW vk bytes (deployed 2026-11-16;
+  the R03 fix: `modp` failed every round proof). `keccak-text` = keccak256 of
+  the lowercase hex string as UTF-8. `modp` = BigInt(vk) mod p (default, failed R03).
+- `TASK_ID_MODE=keccak` (default: keccak256 of the full task_id string),
+  `hex` or `suffix`.
 
 ## Decision logic (deterministic, matches the circuit)
 

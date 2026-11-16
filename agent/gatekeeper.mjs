@@ -19,7 +19,7 @@ export const FIELD = BigInt('218882428718392752222464057452572750885483644004160
 const WASM = path.join(__dirname, '..', 'circuits', 'gatekeeper.wasm');
 const ZKEY = path.join(__dirname, '..', 'circuits', 'gatekeeper_final.zkey');
 
-export const VK_HASH_MODE = process.env.VK_HASH_MODE || 'modp'; // 'modp' | 'keccak'
+export const VK_HASH_MODE = process.env.VK_HASH_MODE || 'modp'; // 'modp' | 'keccak' (raw vk bytes) | 'keccak-text' (utf8 of hex string)
 export const TASK_ID_MODE = process.env.TASK_ID_MODE || 'keccak'; // 'keccak' | 'hex' | 'suffix'
 
 export function toField(hexOrBig) {
@@ -30,7 +30,16 @@ export function toField(hexOrBig) {
 }
 
 export function vkToField(vkHex) {
-  if (VK_HASH_MODE === 'keccak') return toField(keccak256(toUtf8Bytes(vkHex.toLowerCase())));
+  // 'keccak' = keccak256 of the RAW vk bytes (ethers/viem keccak256(hex) idiom).
+  // This is the platform's expected encoding (signal names are *Hash; R03
+  // proved modp fails: every round proof rejected, practice is crypto-only
+  // and never validates encodings). 'keccak-text' = keccak256 of the
+  // lowercase hex string as UTF-8 (previous keccak behaviour, kept as fallback).
+  if (VK_HASH_MODE === 'keccak') {
+    const hex = String(vkHex).toLowerCase().replace(/^0x/, '');
+    return toField(keccak256('0x' + hex));
+  }
+  if (VK_HASH_MODE === 'keccak-text') return toField(keccak256(toUtf8Bytes(String(vkHex).toLowerCase())));
   return toField(vkHex);
 }
 
