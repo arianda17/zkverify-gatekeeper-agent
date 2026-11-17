@@ -52,7 +52,9 @@ next morning):
   the R03 fix: `modp` failed every round proof). `keccak-text` = keccak256 of
   the lowercase hex string as UTF-8. `modp` = BigInt(vk) mod p (default, failed R03).
 - `TASK_ID_MODE=keccak` (default: keccak256 of the full task_id string),
-  `hex` or `suffix`.
+  `hex` or `suffix`. `keccak-uuid` = strip the `R04_`/`practice_` prefix and
+  keccak256 only the UUID (deployed 2026-11-17 for round 5; full-id keccak
+  failed R03+R04).
 
 ## Decision logic (deterministic, matches the circuit)
 

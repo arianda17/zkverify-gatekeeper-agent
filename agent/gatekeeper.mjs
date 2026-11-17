@@ -20,7 +20,7 @@ const WASM = path.join(__dirname, '..', 'circuits', 'gatekeeper.wasm');
 const ZKEY = path.join(__dirname, '..', 'circuits', 'gatekeeper_final.zkey');
 
 export const VK_HASH_MODE = process.env.VK_HASH_MODE || 'modp'; // 'modp' | 'keccak' (raw vk bytes) | 'keccak-text' (utf8 of hex string)
-export const TASK_ID_MODE = process.env.TASK_ID_MODE || 'keccak'; // 'keccak' | 'hex' | 'suffix'
+export const TASK_ID_MODE = process.env.TASK_ID_MODE || 'keccak'; // 'keccak' | 'hex' | 'suffix' | 'keccak-uuid'
 
 export function toField(hexOrBig) {
   const v = typeof hexOrBig === 'string'
@@ -44,6 +44,15 @@ export function vkToField(vkHex) {
 }
 
 export function taskIdToField(taskId) {
+  if (TASK_ID_MODE === 'keccak-uuid') {
+    // Strip the round/practice namespace prefix ("R04_", "practice_") and
+    // keccak256 only the UUID part. R04 proved keccak256(full task_id) fails;
+    // the platform's internal task identity is the bare UUID.
+    const s = String(taskId);
+    const i = s.indexOf('_');
+    const uuid = i >= 0 ? s.slice(i + 1) : s;
+    return toField(keccak256(toUtf8Bytes(uuid)));
+  }
   if (TASK_ID_MODE === 'hex') {
     return toField('0x' + Buffer.from(taskId, 'utf8').toString('hex').slice(0, 62));
   }
